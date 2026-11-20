@@ -12,7 +12,11 @@ double satSpeedY = 2.0f;
 
 double angle = 0.0f;
 double radius = 150.0f;
-double orbitalSP = 0.2f;
+double orbitalSP = 0.05f;
+
+//Trail
+vector<Vector2> trail;
+
 
 int main() {
 
@@ -23,9 +27,16 @@ int main() {
 
         //Declarations
         angle += orbitalSP;
-        double satX = 400 * cos(angle) * radius;
-        double satY = 500 * sin(angle) * radius;
+        float satX = 400 + cos(angle) * radius;
+        float satY = 300 + sin(angle) * radius;
         
+        //Trail
+        trail.push_back({satX, satY});
+
+        if (trail.size() > 200) {
+            trail.erase(trail.begin());
+            // cout << "Trail has reverted" << endl;
+        }
 
         BeginDrawing();
         ClearBackground(BLACK);
@@ -35,6 +46,15 @@ int main() {
 
         //Satellite
         DrawCircle(satX, satY, 10, WHITE);
+        
+        //Trail Movement
+        for (size_t x = 0; x < trail.size(); ++x) {
+            DrawCircleV(trail[x], 2, Fade(WHITE, 0.5f));
+        }
+        // for (size_t x = 1; x < trail.size(); ++x) {
+        //     float thickness = (float)x / trail.size() * 5.0f;
+        //     DrawLineEx(trail[x - 1], trail[x], thickness, WHITE);
+        //     cout << "Trail is in progress" << endl;
 
         //Movement
         //satX += satSpeedX;
