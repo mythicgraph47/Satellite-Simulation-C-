@@ -1,61 +1,56 @@
 #include<iostream>
-#include<vector>
 #include "raylib.h"
+#include<cmath>
+#include<vector>
 
 using namespace std;
 
-//Globals
-float satX = 400;
-float satY = 500;
 
-float satSpeedX = 2;
-float satSpeedY = 2;
+//Globals
+double satSpeedX = 2.0f;
+double satSpeedY = 2.0f;
+
+double angle = 0.0f;
+double radius = 150.0f;
+double orbitalSP = 0.2f;
 
 int main() {
 
-    InitWindow(800, 600, "Satellite Simulation");
+    InitWindow(800, 600, "MythicGraph's Satellite Simulation");
     SetTargetFPS(60);
 
- 
-    while (!WindowShouldClose()) {
+    while(!WindowShouldClose()) {
+
+        //Declarations
+        angle += orbitalSP;
+        double satX = 400 * cos(angle) * radius;
+        double satY = 500 * sin(angle) * radius;
         
-        
-        
+
         BeginDrawing();
+        ClearBackground(BLACK);
+
+        //Earth
+        DrawCircle(400, 300, 50, BLUE);
 
         //Satellite
         DrawCircle(satX, satY, 10, WHITE);
-        //Earth 
-        DrawCircle(400, 300, 50, BLUE;
 
         //Movement
-        satX = satX + satSpeedX;
-        satY = satY + satSpeedY;
-        
-                // Bounce off left and right walls
-        if (satX <= 0) {
-            satX = 0;
-            satSpeedX = satSpeedX * -1; 
-        }
-        if (satX >= 800) {
-            satX = 800;
-            satSpeedX = satSpeedX * -1; 
-        }
+        //satX += satSpeedX;
+        //satY += satSpeedY;
 
-        // Bounce off top and bottom walls
-        if (satY <= 0) {
-            satY = 0;
-            satSpeedY = satSpeedY * -1;
-        }
-        if (satY >= 600) {
-            satY = 600;
-            satSpeedY = satSpeedY * -1;
-        }
-        
+        // if (satX >= 800 || satX <= 0) {
+        //     satSpeedX = satSpeedX * -1;
+        // }
+        // if (satY >= 600 || satY <= 0) {
+        //     satSpeedY = satSpeedY * -1;
+        // }
+
 
         EndDrawing();
     }
 
     CloseWindow();
-    return 0;
+
 }
