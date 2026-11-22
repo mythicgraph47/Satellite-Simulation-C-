@@ -1,3 +1,4 @@
+//BoilerPlate code "plan to use it later for another project, prolly didnt needed to specify this"
 #include "raylib.h"
 #include<cmath>
 #include<vector>

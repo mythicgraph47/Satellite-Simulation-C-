@@ -20,10 +20,16 @@ float earthY = 300.0f;
 
 float satX = 400.0f;
 float satY = 500.0f;
-float velocityX = 5.0f;
-float velocityY = 2.0f;
-float accelerationX = 0.0f;
+float velocityX = 4.0f;
+float velocityY = 0.0f;
+float accelerationX = 1.0f;
 float accelerationY = 0.0f;
+
+
+float moonX = 200.0f;
+float moonY = 150.0f;
+float moonMass = 200.0f;
+float moonRadius = 20.0f;
 
 //Trail
 vector<Vector2> trail;
@@ -35,6 +41,9 @@ int main() {
     SetTargetFPS(60);
 
     while(!WindowShouldClose()) {
+
+        BeginDrawing();
+        ClearBackground(BLACK);
 
         float dt = GetFrameTime();
 
@@ -63,11 +72,25 @@ int main() {
             velocityY = 0;
         }
 
+        float moonDistanceX = moonX - satX;
+        float moonDistanceY = moonY - satY;
+        float moonDistance = sqrt(moonDistanceX* moonDistanceX + moonDistanceY* moonDistanceY);
+
+        if (moonDistance > 10.0f) {
+            float moonForce = (G* moonMass) / (moonDistance* moonDistance);
+
+            accelerationX += moonForce* (moonDistanceX / moonDistance);
+            accelerationY += moonForce* (moonDistanceY / moonDistanceY);
+        }
+
+
+
+
         //Vector jas a direction
         DrawLine(satX, satY, satX + velocityX* 20, satY + velocityY* 20, RED);
 
         //kinetic energy
-        float kineticEnergy = 0.5f* (velocityX* velocityX* + velocityY* velocityY);
+        float kineticEnergy = 0.5f* (velocityX* velocityX + velocityY* velocityY);
         DrawText(TextFormat("Kinetic Energy: %.2f", kineticEnergy), 10, 100, 20, WHITE);
         
         //Trail
@@ -83,26 +106,16 @@ int main() {
         DrawText(TextFormat("Velocity X: %.2f", velocityX), 10, 40, 20, WHITE);
         DrawText(TextFormat("Velocity Y: %.2f", velocityY), 10, 70, 20, WHITE);
 
-        //Future Path
-        float futureX = satX;
-        float futureY = satY;
-        float futureVelocityX = velocityX;
-        float futureVelocityY = velocityY;
 
-
-        for (int x = 0; x < 100; ++x) {
-        DrawCircle(futureX, futureY, 1, Fade(GREEN, 0.3f));
-        }
-
-
-        BeginDrawing();
-        ClearBackground(BLACK);
 
         //Earth
         DrawCircle(400, 300, 50, BLUE);
 
         //Satellite
         DrawCircle(satX, satY, 10, WHITE);
+
+        //Moon
+        DrawCircle(moonX, moonY, moonRadius, WHITE);
         
         //Trail Movement
         for (size_t x = 0; x < trail.size(); ++x) {
