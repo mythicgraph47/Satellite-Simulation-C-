@@ -36,6 +36,8 @@ int main() {
 
     while(!WindowShouldClose()) {
 
+        float dt = GetFrameTime();
+
         // angle += orbitalSP;
         // float satX = 400 + cos(angle) * radius;
         // float satY = 300 + sin(angle) * radius;
@@ -63,10 +65,13 @@ int main() {
 
         //Vector jas a direction
         DrawLine(satX, satY, satX + velocityX* 20, satY + velocityY* 20, RED);
+
+        //kinetic energy
+        float kineticEnergy = 0.5f* (velocityX* velocityX* + velocityY* velocityY);
+        DrawText(TextFormat("Kinetic Energy: %.2f", kineticEnergy), 10, 100, 20, WHITE);
         
         //Trail
         trail.push_back({satX, satY});
-
         if (trail.size() > 200) {
             trail.erase(trail.begin());
             // cout << "Trail has reverted" << endl;
@@ -75,10 +80,19 @@ int main() {
 
         //Text
         DrawText(TextFormat("Distance from Earth: %.2f", distance), 10, 10, 20, WHITE);
-        DrawText(TextFormat("Velocity X: %.2f", velocityX), 10, 30, 20, WHITE);
-        DrawText(TextFormat("Velocity Y: %.2f", velocityY), 10, 60, 20, WHITE);
+        DrawText(TextFormat("Velocity X: %.2f", velocityX), 10, 40, 20, WHITE);
+        DrawText(TextFormat("Velocity Y: %.2f", velocityY), 10, 70, 20, WHITE);
+
+        //Future Path
+        float futureX = satX;
+        float futureY = satY;
+        float futureVelocityX = velocityX;
+        float futureVelocityY = velocityY;
 
 
+        for (int x = 0; x < 100; ++x) {
+        DrawCircle(futureX, futureY, 1, Fade(GREEN, 0.3f));
+        }
 
 
         BeginDrawing();
