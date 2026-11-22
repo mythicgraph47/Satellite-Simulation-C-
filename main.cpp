@@ -14,22 +14,25 @@ using namespace std;
 // double radius = 150.0f;
 // double orbitalSP = 0.05f;
 
-float G = 5000.0f;
+float G = 100.0f;
+float earthMass = 500.0f;
 float earthX = 400.0f;
 float earthY = 300.0f;
 
 float satX = 400.0f;
-float satY = 500.0f;
-float velocityX = 4.0f;
+float satY = 150.0f;
+float velocityX = 18.0f;
 float velocityY = 0.0f;
-float accelerationX = 1.0f;
+float accelerationX = 0.0f;
 float accelerationY = 0.0f;
 
 
 float moonX = 200.0f;
-float moonY = 150.0f;
-float moonMass = 200.0f;
+float moonY = 300.0f;
+float moonMass = 20.0f;
 float moonRadius = 20.0f;
+float moonVelocityX = 0.0f;
+float moonVelocityY = -15.0f;
 
 //Trail
 vector<Vector2> trail;
@@ -44,8 +47,6 @@ int main() {
 
         BeginDrawing();
         ClearBackground(BLACK);
-
-        float dt = GetFrameTime();
 
         // angle += orbitalSP;
         // float satX = 400 + cos(angle) * radius;
@@ -72,6 +73,7 @@ int main() {
             velocityY = 0;
         }
 
+        //Moon
         float moonDistanceX = moonX - satX;
         float moonDistanceY = moonY - satY;
         float moonDistance = sqrt(moonDistanceX* moonDistanceX + moonDistanceY* moonDistanceY);
@@ -80,10 +82,21 @@ int main() {
             float moonForce = (G* moonMass) / (moonDistance* moonDistance);
 
             accelerationX += moonForce* (moonDistanceX / moonDistance);
-            accelerationY += moonForce* (moonDistanceY / moonDistanceY);
+            accelerationY += moonForce* (moonDistanceY / moonDistance);
         }
 
+        //Moon Mechanics
+        float moonAroundEarthX = earthX - moonX;
+        float moonAroundEarthY = earthY - moonY;
+        float moonToEarthDist = sqrt(moonAroundEarthX* moonAroundEarthX + moonAroundEarthY* moonAroundEarthY);
 
+        //Earths pull on moon
+        float moonForce = (G* 100) / (moonToEarthDist* moonToEarthDist);
+        moonVelocityX += moonForce* (moonAroundEarthX / moonToEarthDist);
+        moonVelocityY += moonForce* (moonAroundEarthY / moonToEarthDist);
+
+        moonX += moonVelocityX;
+        moonY += moonVelocityY;
 
 
         //Vector jas a direction
