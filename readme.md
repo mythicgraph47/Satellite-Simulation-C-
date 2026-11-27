@@ -2,6 +2,8 @@
 
 This project measures and shows the movement of an artificial satellite. Its orbital movement displays its stats (its velocity and its acceleration) from the Earth.
 
+![Alt text](C:\Users\MythicGraphArchives\OneDrive\Desktop\Satallite Raylib\MythicGraphsSatellite\sat1.png)
+
 -----------------------------------------------
 ## Update1
 
