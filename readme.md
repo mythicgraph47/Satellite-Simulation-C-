@@ -2,6 +2,9 @@
 
 This project measures and shows the movement of an artificial satellite. Its orbital movement displays its stats (its velocity and its acceleration) from the Earth.
 
+Gameplay:
+<img width="772" height="581" alt="sat1" src="https://github.com/user-attachments/assets/22e9b88e-b078-4917-a60a-67cac29cf182" />
+
 -----------------------------------------------
 ## Update1
 
