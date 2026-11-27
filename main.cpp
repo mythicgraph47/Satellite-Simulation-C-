@@ -70,13 +70,13 @@ int main() {
         //speedup the satellite
         if (!isCrashed) {
             if (IsKeyDown(KEY_UP)) {
-                velocityX *= 1.001f;
-                velocityY *= 1.001f;
+                velocityX *= 1.01f;
+                velocityY *= 1.01f;
             }
 
             if (IsKeyDown(KEY_DOWN)) {
-                velocityX *= 0.999f;
-                velocityY *= 0.999f;
+                velocityX *= 0.99f;
+                velocityY *= 0.99f;
             }
         }
 
