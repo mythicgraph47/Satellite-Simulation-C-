@@ -27,12 +27,12 @@ float accelerationX = 0.0f;
 float accelerationY = 0.0f;
 
 
-float moonX = 200.0f;
+float moonX = 100.0f;
 float moonY = 300.0f;
 float moonMass = 20.0f;
 float moonRadius = 20.0f;
 float moonVelocityX = 0.0f;
-float moonVelocityY = -15.0f;
+float moonVelocityY = -12.7f;
 
 //Trail
 vector<Vector2> trail;
@@ -46,7 +46,10 @@ int main() {
     bool isCrashed = false;
 
     while(!WindowShouldClose()) {
-        
+
+        //time
+        float dt = GetFrameTime();
+        if (dt > 0.05f) dt = 0.05f;
 
     //mouse click teleport
     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
@@ -67,13 +70,13 @@ int main() {
         //speedup the satellite
         if (!isCrashed) {
             if (IsKeyDown(KEY_UP)) {
-                velocityX *= 1.01f;
-                velocityY *= 1.01f;
+                velocityX *= 1.001f;
+                velocityY *= 1.001f;
             }
 
             if (IsKeyDown(KEY_DOWN)) {
-                velocityX *= 0.99f;
-                velocityY *= 0.99f;
+                velocityX *= 0.999f;
+                velocityY *= 0.999f;
             }
         }
 
@@ -138,11 +141,11 @@ int main() {
         moonVelocityY += moonForce* (moonAroundEarthY / moonToEarthDist);
 
         if (!isCrashed) {
-            velocityX += accelerationX;
-            velocityY += accelerationY;
+            velocityX += accelerationX* dt;
+            velocityY += accelerationY* dt;
 
-            satX += velocityX;
-            satY += velocityY;
+            satX += velocityX* dt;
+            satY += velocityY* dt;
         }
 
         moonX += moonVelocityX;
@@ -181,7 +184,8 @@ int main() {
         if (isCrashed) {
             DrawCircle(satX, satY, 10, RED);
         } else {
-            DrawCircle(satX, satY, 10, WHITE);
+            float satAngle = atan2(velocityY, velocityX) * RAD2DEG;
+            DrawPoly({satX, satY}, 3, 10.0f, satAngle + 90.0f, WHITE);
         }
 
         //Moon
