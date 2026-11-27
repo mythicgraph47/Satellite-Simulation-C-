@@ -44,7 +44,47 @@ int main() {
     SetTargetFPS(60);
 
     bool isCrashed = false;
+
     while(!WindowShouldClose()) {
+        
+
+    //mouse click teleport
+    if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+        satX = GetMouseX();
+        satY = GetMouseY();
+        isCrashed = false;
+        trail.clear();
+
+        float angleToMouse = atan2(satY - earthY, satX - earthX);
+        float distanceToMouse = sqrt((earthX - satX)* (earthX - satX) + (earthY - satY)* (earthY - satY));
+
+        if (distanceToMouse > 50.0f) {
+            float orbitSpeed = sqrt((G* earthMass) / distanceToMouse);
+            velocityX = orbitSpeed* -sin(angleToMouse);
+            velocityY = orbitSpeed* cos(angleToMouse);
+        }
+    }
+        //speedup the satellite
+        if (!isCrashed) {
+            if (IsKeyDown(KEY_UP)) {
+                velocityX *= 1.01f;
+                velocityY *= 1.01f;
+            }
+
+            if (IsKeyDown(KEY_DOWN)) {
+                velocityX *= 0.99f;
+                velocityY *= 0.99f;
+            }
+        }
+
+        //0 stop reset
+        if (IsKeyPressed(KEY_ZERO)) {
+            velocityX = 0.0f;
+            velocityY = 0.0f;
+            isCrashed = false;
+        }
+    
+    
 
         BeginDrawing();
         ClearBackground(BLACK);
@@ -129,6 +169,8 @@ int main() {
         DrawText(TextFormat("Velocity X: %.2f", velocityX), 10, 40, 20, WHITE);
         DrawText(TextFormat("Velocity Y: %.2f", velocityY), 10, 70, 20, WHITE);
 
+        DrawText("Click: Teleport | UP/DOWN: Speed | 0: Stop", 10, 560, 20, LIGHTGRAY);
+
 
 
         //Earth
@@ -170,5 +212,8 @@ int main() {
     }
 
     CloseWindow();
-
+    return 0;
+    
 }
+
+
