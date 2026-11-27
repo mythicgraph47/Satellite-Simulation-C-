@@ -1,159 +1,185 @@
-#include<iostream>
 #include "raylib.h"
-#include<cmath>
-#include<vector>
+#include <cmath>
+#include <vector>
 
 using namespace std;
 
-
-//Globals
-// double satSpeedX = 2.0f;
-// double satSpeedY = 2.0f;
-
-// double angle = 0.0f;
-// double radius = 150.0f;
-// double orbitalSP = 0.05f;
-
+// --- PHYSICS CONSTANTS ---
 float G = 100.0f;
 float earthMass = 500.0f;
+float moonMass = 30.0f; 
+
+// --- EARTH ---
 float earthX = 400.0f;
 float earthY = 300.0f;
+float earthRadius = 50.0f;
 
+// --- SATELLITE ---
 float satX = 400.0f;
 float satY = 150.0f;
-float velocityX = 18.0f;
-float velocityY = 0.0f;
-float accelerationX = 0.0f;
-float accelerationY = 0.0f;
+float orbitalVx = 18.0f; 
+float orbitalVy = 0.0f;
+bool isCrashed = false; 
+float speedMultiplier = 1.0f; // Used for UP/DOWN keys
 
-
+// --- MOON ---
 float moonX = 200.0f;
 float moonY = 300.0f;
-float moonMass = 20.0f;
-float moonRadius = 20.0f;
-float moonVelocityX = 0.0f;
-float moonVelocityY = -15.0f;
+float moonVx = 0.0f;
+float moonVy = -15.8f; 
 
-//Trail
+// --- TRAIL ---
 vector<Vector2> trail;
 
-
 int main() {
-
     InitWindow(800, 600, "MythicGraph's Satellite Simulation");
     SetTargetFPS(60);
 
-    while(!WindowShouldClose()) {
+    while (!WindowShouldClose()) {
+        float dt = GetFrameTime();
+        if (dt > 0.05f) dt = 0.05f; 
 
+        // ==========================================
+        // 1. CONTROLS
+        // ==========================================
+        
+        // Click to teleport satellite (Instantly calculates a stable orbit)
+        if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+            satX = GetMouseX();
+            satY = GetMouseY();
+            isCrashed = false; 
+            trail.clear();
+            speedMultiplier = 1.0f; // Reset speed multiplier on click
+
+            float angleToMouse = atan2(satY - earthY, satX - earthX);
+            float distToMouse = sqrt((earthX - satX)*(earthX - satX) + (earthY - satY)*(earthY - satY));
+
+            if (distToMouse > earthRadius) { // Prevent divide by zero if clicked inside Earth
+                float orbitSpeed = sqrt((G * earthMass) / distToMouse);
+                orbitalVx = orbitSpeed * -sin(angleToMouse);
+                orbitalVy = orbitSpeed * cos(angleToMouse);
+            }
+        }
+
+        // Speed up / Slow down
+        if (!isCrashed) {
+            if (IsKeyDown(KEY_UP)) {
+                speedMultiplier += 0.05f; // Constantly increase speed while held
+            }
+            if (IsKeyDown(KEY_DOWN)) {
+                speedMultiplier -= 0.05f; // Constantly decrease speed while held
+            }
+        }
+        
+        // Press '0' to stop entirely
+        if (IsKeyPressed(KEY_ZERO)) {
+            orbitalVx = 0.0f;
+            orbitalVy = 0.0f;
+        }
+
+        // ==========================================
+        // 2. FORCE CALCULATIONS
+        // ==========================================
+        if (!isCrashed) {
+            // A. Earth pulls Satellite
+            float dxE = earthX - satX;
+            float dyE = earthY - satY;
+            float distE = sqrt(dxE * dxE + dyE * dyE);
+            float accX_E = 0, accY_E = 0;
+
+            if (distE > 10.0f) {
+                float forceE = (G * earthMass) / (distE * distE);
+                accX_E = forceE * (dxE / distE);
+                accY_E = forceE * (dyE / distE);
+            }
+
+            // B. Moon pulls Satellite
+            float dxM = moonX - satX;
+            float dyM = moonY - satY;
+            float distM = sqrt(dxM * dxM + dyM * dyM);
+            float accX_M = 0, accY_M = 0;
+
+            if (distM > 10.0f) {
+                float forceM = (G * moonMass) / (distM * distM);
+                accX_M = forceM * (dxM / distM);
+                accY_M = forceM * (dyM / distM);
+            }
+
+            // C. Earth pulls Moon
+            float dxMoonE = earthX - moonX;
+            float dyMoonE = earthY - moonY;
+            float distMoonE = sqrt(dxMoonE * dxMoonE + dyMoonE * dyMoonE);
+            float accMoonX = 0, accMoonY = 0;
+
+            if (distMoonE > 10.0f) {
+                float forceMoonE = (G * earthMass) / (distMoonE * distMoonE);
+                accMoonX = forceMoonE * (dxMoonE / distMoonE);
+                accMoonY = forceMoonE * (dyMoonE / distMoonE);
+            }
+
+            // ==========================================
+            // 3. UPDATE VELOCITIES & POSITIONS
+            // ==========================================
+            
+            // Apply gravity + speed multiplier to the satellite
+            orbitalVx += ((accX_E + accX_M) * dt * speedMultiplier);
+            orbitalVy += ((accY_E + accY_M) * dt * speedMultiplier);
+
+            satX += orbitalVx * dt;
+            satY += orbitalVy * dt;
+
+            moonVx += accMoonX * dt;
+            moonVy += accMoonY * dt;
+
+            moonX += moonVx * dt;
+            moonY += moonVy * dt;
+
+            // ==========================================
+            // 4. TRAIL & COLLISION
+            // ==========================================
+            
+            trail.push_back({satX, satY});
+            if (trail.size() > 300) {
+                trail.erase(trail.begin());
+            }
+
+            // Collision detection
+            if (distE <= (earthRadius + 5.0f) || distM <= (15.0f + 5.0f)) {
+                isCrashed = true;
+            }
+        }
+
+        // ==========================================
+        // 5. DRAWING
+        // ==========================================
         BeginDrawing();
         ClearBackground(BLACK);
 
-        // angle += orbitalSP;
-        // float satX = 400 + cos(angle) * radius;
-        // float satY = 300 + sin(angle) * radius;
-
-        float distanceX = earthX - satX;
-        float distanceY = earthY - satY;
-        float distance = sqrt(distanceX* distanceX + distanceY* distanceY);
-
-        float force = G / (distance * distance);
-
-        accelerationX = force * (distanceX / distance);
-        accelerationY = force * (distanceY / distance);
-
-        velocityX += accelerationX;
-        velocityY += accelerationY;
-
-        satX += velocityX;
-        satY += velocityY;
-
-        //Crash Collision
-        if (distance <= 60) {
-            velocityX = 0;
-            velocityY = 0;
+        // Trail
+        for (size_t i = 0; i < trail.size(); i++) {
+            DrawCircleV(trail[i], 2, Fade(WHITE, 0.5f));
         }
 
-        //Moon
-        float moonDistanceX = moonX - satX;
-        float moonDistanceY = moonY - satY;
-        float moonDistance = sqrt(moonDistanceX* moonDistanceX + moonDistanceY* moonDistanceY);
+        // Earth & Moon
+        DrawCircle(earthX, earthY, earthRadius, BLUE);
+        DrawCircle(moonX, moonY, 15, LIGHTGRAY);
 
-        if (moonDistance > 10.0f) {
-            float moonForce = (G* moonMass) / (moonDistance* moonDistance);
-
-            accelerationX += moonForce* (moonDistanceX / moonDistance);
-            accelerationY += moonForce* (moonDistanceY / moonDistance);
+        // Satellite
+        if (isCrashed) {
+            DrawCircle(satX, satY, 8, RED);
+            DrawText("CRASHED!", 340, 280, 30, RED);
+        } else {
+            float satAngle = atan2(orbitalVy, orbitalVx) * RAD2DEG;
+            DrawPoly({satX, satY}, 3, 10.0f, satAngle + 90.0f, WHITE);
         }
 
-        //Moon Mechanics
-        float moonAroundEarthX = earthX - moonX;
-        float moonAroundEarthY = earthY - moonY;
-        float moonToEarthDist = sqrt(moonAroundEarthX* moonAroundEarthX + moonAroundEarthY* moonAroundEarthY);
-
-        //Earths pull on moon
-        float moonForce = (G* 100) / (moonToEarthDist* moonToEarthDist);
-        moonVelocityX += moonForce* (moonAroundEarthX / moonToEarthDist);
-        moonVelocityY += moonForce* (moonAroundEarthY / moonToEarthDist);
-
-        moonX += moonVelocityX;
-        moonY += moonVelocityY;
-
-
-        //Vector jas a direction
-        DrawLine(satX, satY, satX + velocityX* 20, satY + velocityY* 20, RED);
-
-        //kinetic energy
-        float kineticEnergy = 0.5f* (velocityX* velocityX + velocityY* velocityY);
-        DrawText(TextFormat("Kinetic Energy: %.2f", kineticEnergy), 10, 100, 20, WHITE);
-        
-        //Trail
-        trail.push_back({satX, satY});
-        if (trail.size() > 200) {
-            trail.erase(trail.begin());
-            // cout << "Trail has reverted" << endl;
-        }
-
-
-        //Text
-        DrawText(TextFormat("Distance from Earth: %.2f", distance), 10, 10, 20, WHITE);
-        DrawText(TextFormat("Velocity X: %.2f", velocityX), 10, 40, 20, WHITE);
-        DrawText(TextFormat("Velocity Y: %.2f", velocityY), 10, 70, 20, WHITE);
-
-
-
-        //Earth
-        DrawCircle(400, 300, 50, BLUE);
-
-        //Satellite
-        DrawCircle(satX, satY, 10, WHITE);
-
-        //Moon
-        DrawCircle(moonX, moonY, moonRadius, WHITE);
-        
-        //Trail Movement
-        for (size_t x = 0; x < trail.size(); ++x) {
-            DrawCircleV(trail[x], 2, Fade(WHITE, 0.5f));
-        }
-        // for (size_t x = 1; x < trail.size(); ++x) {
-        //     float thickness = (float)x / trail.size() * 5.0f;
-        //     DrawLineEx(trail[x - 1], trail[x], thickness, WHITE);
-        //     cout << "Trail is in progress" << endl;
-
-        //Movement
-        //satX += satSpeedX;
-        //satY += satSpeedY;
-
-        // if (satX >= 800 || satX <= 0) {
-        //     satSpeedX = satSpeedX * -1;
-        // }
-        // if (satY >= 600 || satY <= 0) {
-        //     satSpeedY = satSpeedY * -1;
-        // }
-
+        // Telemetry Text
+        float totalSpeed = sqrt(orbitalVx*orbitalVx + orbitalVy*orbitalVy);
+        DrawText(TextFormat("Speed: %.1f | Multiplier: %.2fx", totalSpeed, speedMultiplier), 10, 10, 20, GREEN);
+        DrawText("CLICK: Teleport & Orbit | UP/DOWN: Speed | 0: Stop", 10, 560, 20, LIGHTGRAY);
 
         EndDrawing();
     }
-
     CloseWindow();
-
+    return 0;
 }
