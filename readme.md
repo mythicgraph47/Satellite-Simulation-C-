@@ -5,6 +5,12 @@ This project measures and shows the movement of an artificial satellite. Its orb
 Gameplay:
 <img width="772" height="581" alt="sat1" src="https://github.com/user-attachments/assets/22e9b88e-b078-4917-a60a-67cac29cf182" />
 
+
+### How to Navigate:
+1. Click anywhere on the screen and it will it instantly teleport the satellite there.
+2. You can use "UP" and "DOWN" arrow keys to increase and decrease velocity however it severely affects the orbit of the satellite might causing escape velocity
+3. Press 0 to completely stop the satellite which will cause free fall motion towards the Earth
+
 -----------------------------------------------
 ## Update1
 
