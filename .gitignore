@@ -1,3 +1,10 @@
 *.exe
 *.dsym
 main
+
+emsdk/
+raylib-5.0/
+.venv/
+*.o
+*.a
+*.dll
